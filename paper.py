@@ -111,39 +111,39 @@ if option == "Login":
         st.sidebar.success(f"Welcome, {name}!")
 
     if role == "author":
-    st.title("Author Dashboard")
-    st.write("Submit and track your papers here.")
+        st.title("Author Dashboard")
+        st.write("Submit and track your papers here.")
+        
+        # Paper Information Fields
+        paper_title = st.text_input("Paper Title")
+        paper_abstract = st.text_area("Abstract")
+        paper_keywords = st.text_input("Keywords (comma-separated)")
+        paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
+
+        if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+            # Create a new author ID or fetch existing ID
+            author_id = username  # You can customize this as needed
+            folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+            submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
     
-    # Paper Information Fields
-    paper_title = st.text_input("Paper Title")
-    paper_abstract = st.text_area("Abstract")
-    paper_keywords = st.text_input("Keywords (comma-separated)")
-    paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
-
-    if paper_file and all([paper_title, paper_abstract, paper_keywords]):
-        # Create a new author ID or fetch existing ID
-        author_id = username  # You can customize this as needed
-        folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
-        submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
-
-        paper_data = {
-            "Author ID": author_id,
-            "Author": name,
-            "Title": paper_title,
-            "Abstract": paper_abstract,
-            "Keywords": paper_keywords,
-            "Status": "Pending",
-            "Reviewer": "",
-            "Reviewer Comments": "",
-            "File Name": paper_file.name,
-            "Submission Date": submission_date  # Add submission date here
-        }
-
-        df = load_data("Submissions")  # Load from "Submissions" worksheet
-        df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
-        save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-        upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
-        st.success("Paper submitted successfully!")
+            paper_data = {
+                "Author ID": author_id,
+                "Author": name,
+                "Title": paper_title,
+                "Abstract": paper_abstract,
+                "Keywords": paper_keywords,
+                "Status": "Pending",
+                "Reviewer": "",
+                "Reviewer Comments": "",
+                "File Name": paper_file.name,
+                "Submission Date": submission_date  # Add submission date here
+            }
+    
+            df = load_data("Submissions")  # Load from "Submissions" worksheet
+            df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
+            save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+            upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
+            st.success("Paper submitted successfully!")
 
 
 # ------
