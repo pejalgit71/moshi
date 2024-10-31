@@ -44,6 +44,10 @@ def load_data(worksheet_name):
 
 # Save DataFrame back to a specific worksheet
 def save_data(df, worksheet_name):
+    # Convert Timestamp objects to strings for JSON compatibility
+    if 'Submission Date' in df.columns:
+        df['Submission Date'] = df['Submission Date'].astype(str)
+    
     sheet = gc.open("Paper_Submissions").worksheet(worksheet_name)
     df = df.fillna('')
     df.replace([float('inf'), float('-inf')], '', inplace=True)
