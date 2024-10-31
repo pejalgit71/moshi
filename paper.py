@@ -88,15 +88,23 @@ def register_user(username, name, password, role):
 
 
 # Upload file to Google Drive
-def upload_to_drive(file, filename):
+def upload_to_drive(file, filename, folder_id):
+    # Create a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-        tmp_file.write(file.getvalue())
+        tmp_file.write(file.getvalue())  # Write the uploaded file to the temporary file
         tmp_file_path = tmp_file.name
 
-    file_metadata = {"name": filename, "parents": [os.getenv("1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d")]}
+    # Upload to Google Drive
+    file_metadata = {"name": filename, "parents": [folder_id]}  # Ensure to use the correct folder ID
     media = MediaFileUpload(tmp_file_path, resumable=True)
-    drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-    os.remove(tmp_file_path)
+
+    try:
+        drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+        st.success("File uploaded successfully to Google Drive.")
+    except Exception as e:
+        st.error(f"Error during file upload: {e}")
+    finally:
+        os.remove(tmp_file_path)  # Remove the temporary file
 
 # Main Streamlit App
 st.sidebar.title("Login / Register")
