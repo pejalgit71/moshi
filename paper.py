@@ -73,15 +73,18 @@ def authenticate(username, password, users):
 # Register a new user
 def register_user(username, name, password, role):
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    new_user = {
+    new_user = pd.DataFrame([{
         "Username": username,
         "Name": name,
         "Password": hashed_password,
         "Role": role
-    }
+    }])
+    
     df = load_data("Users")  # Load from "Users" worksheet
-    df = df.append(new_user, ignore_index=True)
+    df = pd.concat([df, new_user], ignore_index=True)
+    
     save_data(df, "Users")  # Save back to "Users" worksheet
+
 
 # Upload file to Google Drive
 def upload_to_drive(file, filename):
