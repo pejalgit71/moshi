@@ -110,107 +110,113 @@ if option == "Login":
     if name:
         st.sidebar.success(f"Welcome, {name}!")
 
-        if role == "author":
-            st.title("Author Dashboard")
-            st.write("Submit and track your papers here.")
-            
-            paper_title = st.text_input("Paper Title")
-            paper_abstract = st.text_area("Abstract")
-            paper_keywords = st.text_input("Keywords (comma-separated)")
-            paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
-# ----------------
-            
-            if paper_file and all([paper_title, paper_abstract, paper_keywords]):
-                # Create a new author ID or fetch existing ID
-                author_id = username  # You can customize this as needed
-                paper_data = {
-                    "Author ID": author_id,
-                    "Author": name,
-                    "Title": paper_title,
-                    "Abstract": paper_abstract,
-                    "Keywords": paper_keywords,
-                    "Status": "Pending",
-                    "Reviewer": "",
-                    "Reviewer Comments": "",
-                    "File Name": paper_file.name
-                }
-                df = load_data("Submissions")  # Load from "Submissions" worksheet
-                df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
-                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-                upload_to_drive(paper_file, paper_file.name)  # Call the updated upload function
-                st.success("Paper submitted successfully!")
+    if role == "author":
+    st.title("Author Dashboard")
+    st.write("Submit and track your papers here.")
+    
+    # Paper Information Fields
+    paper_title = st.text_input("Paper Title")
+    paper_abstract = st.text_area("Abstract")
+    paper_keywords = st.text_input("Keywords (comma-separated)")
+    paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
+
+    if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+        # Create a new author ID or fetch existing ID
+        author_id = username  # You can customize this as needed
+        folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+        submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
+
+        paper_data = {
+            "Author ID": author_id,
+            "Author": name,
+            "Title": paper_title,
+            "Abstract": paper_abstract,
+            "Keywords": paper_keywords,
+            "Status": "Pending",
+            "Reviewer": "",
+            "Reviewer Comments": "",
+            "File Name": paper_file.name,
+            "Submission Date": submission_date  # Add submission date here
+        }
+
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
+        save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+        upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
+        st.success("Paper submitted successfully!")
+
 
 # ------
-        elif role == "reviewer":
-            st.title("Reviewer Dashboard")
-            st.write("View and review assigned papers.")
+    elif role == "reviewer":
+        st.title("Reviewer Dashboard")
+        st.write("View and review assigned papers.")
+        
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
+        st.write(assigned_papers)
+        
+        if not assigned_papers.empty:
+            paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
+            st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
             
-            df = load_data("Submissions")  # Load from "Submissions" worksheet
-            assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
-            st.write(assigned_papers)
+            review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
+            review_comments = st.text_area("Provide comments:")
             
-            if not assigned_papers.empty:
-                paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
-                st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
-                
-                review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
-                review_comments = st.text_area("Provide comments:")
-                
-                if st.button("Submit Review"):
-                    df.at[paper_id, "Status"] = review_status
-                    df.at[paper_id, "Reviewer Comments"] = review_comments
-                    save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-                    st.success("Review submitted successfully!")
-            else:
-                st.write("No papers assigned for review.")
+            if st.button("Submit Review"):
+                df.at[paper_id, "Status"] = review_status
+                df.at[paper_id, "Reviewer Comments"] = review_comments
+                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+                st.success("Review submitted successfully!")
+        else:
+            st.write("No papers assigned for review.")
 
     
         
-        elif role == "admin":
-            st.title("Admin Dashboard")
-            st.write("Manage papers, assign reviewers, and delete papers.")
-            
-            df = load_data("Submissions")
-            df.index = range(1, len(df) + 1)
-            st.write(df)
-            
-            # Filter for reviewed and pending papers
-            reviewed_papers = df[df["Status"] != "Pending"]
-            pending_papers = df[df["Status"] == "Pending"]
+    elif role == "admin":
+        st.title("Admin Dashboard")
+        st.write("Manage papers, assign reviewers, and delete papers.")
         
-            # Display Pie Chart of Reviewed vs Pending
-            with st.expander("Review Status Summary"):
-                review_counts = df["Status"].value_counts()
-                fig, ax = plt.subplots()
-                ax.pie(review_counts, labels=review_counts.index, autopct='%1.1f%%', startangle=90)
-                ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
-                st.pyplot(fig)
-            
-            # Display Line Chart of Reviewed Papers Over Time (if you have a 'Submission Date' column)
-            if "Submission Date" in df.columns:
-                with st.expander("Reviewed Papers Over Time"):
-                    df["Submission Date"] = pd.to_datetime(df["Submission Date"])
-                    reviewed_over_time = reviewed_papers.groupby("Submission Date").size().cumsum()
-                    st.line_chart(reviewed_over_time)
+        df = load_data("Submissions")
+        df.index = range(1, len(df) + 1)
+        st.write(df)
         
-            # Assign Reviewer
-            unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
-            if not unassigned_papers.empty:
-                paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
-                reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
-                if st.button("Assign Reviewer"):
-                    df.at[paper_to_assign, "Reviewer"] = reviewer
-                    save_data(df, "Submissions")
-                    st.success("Reviewer assigned successfully!")
-            
-            # Delete Paper
-            with st.expander("Delete Paper"):
-                paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
-                if st.button("Delete Paper"):
-                    df = df[df["File Name"] != paper_to_delete]
-                    save_data(df, "Submissions")
-                    st.success("Paper deleted successfully!")
-                    
+        # Filter for reviewed and pending papers
+        reviewed_papers = df[df["Status"] != "Pending"]
+        pending_papers = df[df["Status"] == "Pending"]
+    
+        # Display Pie Chart of Reviewed vs Pending
+        with st.expander("Review Status Summary"):
+            review_counts = df["Status"].value_counts()
+            fig, ax = plt.subplots()
+            ax.pie(review_counts, labels=review_counts.index, autopct='%1.1f%%', startangle=90)
+            ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
+            st.pyplot(fig)
+        
+        # Display Line Chart of Reviewed Papers Over Time (if you have a 'Submission Date' column)
+        if "Submission Date" in df.columns:
+            with st.expander("Reviewed Papers Over Time"):
+                df["Submission Date"] = pd.to_datetime(df["Submission Date"])
+                reviewed_over_time = reviewed_papers.groupby("Submission Date").size().cumsum()
+                st.line_chart(reviewed_over_time)
+    
+        # Assign Reviewer
+        unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
+        if not unassigned_papers.empty:
+            paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
+            reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+            if st.button("Assign Reviewer"):
+                df.at[paper_to_assign, "Reviewer"] = reviewer
+                save_data(df, "Submissions")
+                st.success("Reviewer assigned successfully!")
+        
+        # Delete Paper
+        with st.expander("Delete Paper"):
+            paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
+            if st.button("Delete Paper"):
+                df = df[df["File Name"] != paper_to_delete]
+                save_data(df, "Submissions")
+                st.success("Paper deleted successfully!")
+                
     else:
         st.sidebar.error("Incorrect username/password.")
 
