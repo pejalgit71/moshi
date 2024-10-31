@@ -107,6 +107,7 @@ def upload_to_drive(file, filename, folder_id):
         os.remove(tmp_file_path)  # Remove the temporary file
 
 # Main Streamlit App
+st.sidebar.image("MOSHIP-1.png", use_column_width=True)  # Adjust the path and use_column_width if needed
 st.sidebar.title("Login / Register")
 option = st.sidebar.selectbox("Select an option", ["Login", "Register"])
 
