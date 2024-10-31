@@ -177,13 +177,12 @@ if option == "Login":
                     save_data(df, "Submissions")  # Save back to "Submissions" worksheet
                     st.success("Reviewer assigned successfully!")
             
-            # Delete Paper
-            paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
-            if st.button("Delete Paper"):
-                df = df[df["File Name"] != paper_to_delete]
-                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-                st.success("Paper deleted successfully!")
-
+            with st.expander("Delete Paper"):
+                paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
+                if st.button("Delete Paper"):
+                    df = df[df["File Name"] != paper_to_delete]
+                    save_data(df, "Submissions")
+                    st.success("Paper deleted successfully!")
     else:
         st.sidebar.error("Incorrect username/password.")
 
