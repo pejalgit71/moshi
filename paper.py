@@ -253,3 +253,5 @@ else:
         if st.button("Register"):
             register_user(new_username, new_name, new_password, new_role)
             st.success("User registered successfully!")
+st.sidebar.markdown("---")  # Adds a horizontal line for separation
+st.sidebar.markdown("Developed by Ts Faizal Ahmad Fadzil<sup>TM</sup>", unsafe_allow_html=True)
