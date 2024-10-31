@@ -165,7 +165,8 @@ if option == "Login":
             st.write("Manage papers, assign reviewers, and delete papers.")
             
             df = load_data("Submissions")  # Load from "Submissions" worksheet
-            
+            df.index = range(1, len(df) + 1)
+            st.write(df)
             # Assign Reviewer
             unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
             if not unassigned_papers.empty:
