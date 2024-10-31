@@ -201,22 +201,46 @@ if option == "Login":
         st.title("MOSHIP Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
         
-        df = load_data("Submissions")  # Load from "Submissions" worksheet
-        st.write(df)  # Display all papers
+        df = load_data("Submissions")
+        df.index = range(1, len(df) + 1)
+        st.write(df)
         
-        paper_id = st.number_input("Enter the index of the paper to delete:", min_value=0, max_value=len(df)-1, step=1)
+        # Filter for reviewed and pending papers
+        reviewed_papers = df[df["Status"] != "Pending"]
+        pending_papers = df[df["Status"] == "Pending"]
+    
+        # Display Pie Chart of Reviewed vs Pending
+        with st.expander("Review Status Summary"):
+            review_counts = df["Status"].value_counts()
+            fig, ax = plt.subplots()
+            ax.pie(review_counts, labels=review_counts.index, autopct='%1.1f%%', startangle=90)
+            ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
+            st.pyplot(fig)
         
-        if st.button("Delete Paper"):
-            df = df.drop(index=paper_id)  # Drop the selected paper
-            save_data(df.reset_index(drop=True), "Submissions")  # Save updated data
-            st.success("Paper deleted successfully!")
+        # Display Line Chart of Reviewed Papers Over Time (if you have a 'Submission Date' column)
+        if "Submission Date" in df.columns:
+            with st.expander("Reviewed Papers Over Time"):
+                df["Submission Date"] = pd.to_datetime(df["Submission Date"])
+                reviewed_over_time = reviewed_papers.groupby("Submission Date").size().cumsum()
+                st.line_chart(reviewed_over_time)
+    
+        # Assign Reviewer
+        unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
+        if not unassigned_papers.empty:
+            paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
+            reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+            if st.button("Assign Reviewer"):
+                df.at[paper_to_assign, "Reviewer"] = reviewer
+                save_data(df, "Submissions")
+                st.success("Reviewer assigned successfully!")
         
-        # Assign reviewers if needed
-        reviewer_name = st.selectbox("Assign Reviewer", load_users()["usernames"].keys())
-        if st.button("Assign Reviewer"):
-            df.at[paper_id, "Reviewer"] = reviewer_name
-            save_data(df, "Submissions")
-            st.success("Reviewer assigned successfully!")
+        # Delete Paper
+        with st.expander("Delete Paper"):
+            paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
+            if st.button("Delete Paper"):
+                df = df[df["File Name"] != paper_to_delete]
+                save_data(df, "Submissions")
+                st.success("Paper deleted successfully!")
 
 else:
     if option == "Register":
