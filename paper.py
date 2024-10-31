@@ -182,7 +182,7 @@ if option == "Login":
     
         
     elif role == "admin":
-        st.title("Admin Dashboard")
+        st.title("MOSHI Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
         
         df = load_data("Submissions")
