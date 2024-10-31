@@ -239,7 +239,7 @@ elif option == "Register":
     new_username = st.text_input("Choose a Username")
     new_name = st.text_input("Your Name")
     new_password = st.text_input("Choose a Password", type="password")
-    role = st.selectbox("Select Role", ["author", "reviewer", "admin"])
+    role = st.selectbox("Select Role", ["author", "reviewer"])
 
     if st.button("Register"):
         if new_username and new_name and new_password:
