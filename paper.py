@@ -12,21 +12,9 @@ import tempfile
 # Google Sheets and Drive API setup
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
-# Load credentials from environment variables for security
+# Load credentials from Streamlit secrets
 credentials = Credentials.from_service_account_info(
     {
-        # "type": os.getenv("GOOGLE_TYPE"),
-        # "project_id": os.getenv("GOOGLE_PROJECT_ID"),
-        # "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
-        # "private_key": os.getenv("GOOGLE_PRIVATE_KEY").replace("\\n", "\n"),
-        # "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
-        # "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        # "auth_uri": os.getenv("GOOGLE_AUTH_URI"),
-        # "token_uri": os.getenv("GOOGLE_TOKEN_URI"),
-        # "auth_provider_x509_cert_url": os.getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL"),
-        # "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL"),
-
-
         "type": st.secrets["gcp_service_account"]["type"],
         "project_id": st.secrets["gcp_service_account"]["project_id"],
         "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
@@ -57,7 +45,6 @@ def save_data(df, worksheet_name):
     sheet = gc.open("Paper_Submissions").worksheet(worksheet_name)
     df = df.fillna('')
     df.replace([float('inf'), float('-inf')], '', inplace=True)
-
     sheet.update([df.columns.values.tolist()] + df.values.tolist())
 
 # Load users from the "Users" worksheet
@@ -118,7 +105,7 @@ if option == "Login":
 
     if name:
         st.sidebar.success(f"Welcome, {name}!")
-        
+
         if role == "author":
             st.title("Author Dashboard")
             st.write("Submit and track your papers here.")
@@ -189,7 +176,7 @@ if option == "Login":
                 df = df[df["File Name"] != paper_to_delete]
                 save_data(df, "Submissions")  # Save back to "Submissions" worksheet
                 st.success("Paper deleted successfully!")
-        
+
     else:
         st.sidebar.error("Incorrect username/password.")
 
