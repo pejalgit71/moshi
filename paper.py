@@ -114,7 +114,8 @@ if option == "Login":
             paper_abstract = st.text_area("Abstract")
             paper_keywords = st.text_input("Keywords (comma-separated)")
             paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
-
+# ----------------
+            
             if paper_file and all([paper_title, paper_abstract, paper_keywords]):
                 paper_data = {
                     "Author": name,
@@ -127,11 +128,12 @@ if option == "Login":
                     "File Name": paper_file.name
                 }
                 df = load_data("Submissions")  # Load from "Submissions" worksheet
-                df = df.append(paper_data, ignore_index=True)
+                df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
                 save_data(df, "Submissions")  # Save back to "Submissions" worksheet
                 upload_to_drive(paper_file, paper_file.name)  # Call the updated upload function
                 st.success("Paper submitted successfully!")
 
+# ------
         elif role == "reviewer":
             st.title("Reviewer Dashboard")
             st.write("View and review assigned papers.")
