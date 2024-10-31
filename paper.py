@@ -15,16 +15,28 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapi
 # Load credentials from environment variables for security
 credentials = Credentials.from_service_account_info(
     {
-        "type": os.getenv("GOOGLE_TYPE"),
-        "project_id": os.getenv("GOOGLE_PROJECT_ID"),
-        "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
-        "private_key": os.getenv("GOOGLE_PRIVATE_KEY").replace("\\n", "\n"),
-        "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
-        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-        "auth_uri": os.getenv("GOOGLE_AUTH_URI"),
-        "token_uri": os.getenv("GOOGLE_TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL"),
+        # "type": os.getenv("GOOGLE_TYPE"),
+        # "project_id": os.getenv("GOOGLE_PROJECT_ID"),
+        # "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
+        # "private_key": os.getenv("GOOGLE_PRIVATE_KEY").replace("\\n", "\n"),
+        # "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
+        # "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+        # "auth_uri": os.getenv("GOOGLE_AUTH_URI"),
+        # "token_uri": os.getenv("GOOGLE_TOKEN_URI"),
+        # "auth_provider_x509_cert_url": os.getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL"),
+        # "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL"),
+
+
+        "type": st.secrets["gcp_service_account"]["type"],
+        "project_id": st.secrets["gcp_service_account"]["project_id"],
+        "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
+        "private_key": st.secrets["gcp_service_account"]["private_key"].replace("\\n", "\n"),
+        "client_email": st.secrets["gcp_service_account"]["client_email"],
+        "client_id": st.secrets["gcp_service_account"]["client_id"],
+        "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
+        "token_uri": st.secrets["gcp_service_account"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"]
     },
     scopes=SCOPES
 )
