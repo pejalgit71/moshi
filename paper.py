@@ -231,8 +231,10 @@ if option == "Login":
                 
     else:
         st.sidebar.error("Incorrect username/password.")
-st.sidebar.markdown("---")  # Adds a horizontal line for separation
-st.sidebar.markdown("Developed by Ts Faizal Ahmad Fadzil<sup>TM</sup>", unsafe_allow_html=True)
+        
+    st.sidebar.markdown("---")  # Adds a horizontal line for separation
+    st.sidebar.markdown("Developed by Ts Faizal Ahmad Fadzil<sup>TM</sup>", unsafe_allow_html=True)
+
 elif option == "Register":
     new_username = st.text_input("Choose a Username")
     new_name = st.text_input("Your Name")
