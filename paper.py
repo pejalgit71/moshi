@@ -111,6 +111,9 @@ st.sidebar.image("MOSHIP-1.png", use_column_width=True)  # Adjust the path and u
 st.sidebar.title("Login / Register")
 option = st.sidebar.selectbox("Select an option", ["Login", "Register"])
 
+st.sidebar.markdown("---")  # Adds a horizontal line for separation
+st.sidebar.markdown("Developed by Ts Faizal Ahmad Fadzil<sup>TM</sup>", unsafe_allow_html=True)
+
 if option == "Login":
     username = st.sidebar.text_input("Username")
     password = st.sidebar.text_input("Password", type="password")
