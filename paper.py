@@ -8,6 +8,7 @@ from googleapiclient.http import MediaFileUpload
 import bcrypt
 import os
 import tempfile
+import matplotlib.pyplot as plt
 
 # Google Sheets and Drive API setup
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -160,30 +161,31 @@ if option == "Login":
             else:
                 st.write("No papers assigned for review.")
 
-        # elif role == "admin":
-        #     st.title("Admin Dashboard")
-        #     st.write("Manage papers, assign reviewers, and delete papers.")
+        elif role == "admin":
+            st.title("Admin Dashboard")
+            st.write("Manage papers, assign reviewers, and delete papers.")
             
-        #     df = load_data("Submissions")  # Load from "Submissions" worksheet
-        #     df.index = range(1, len(df) + 1)
-        #     st.write(df)
-        #     # Assign Reviewer
-        #     unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
-        #     if not unassigned_papers.empty:
-        #         paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
-        #         reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
-        #         if st.button("Assign Reviewer"):
-        #             df.at[paper_to_assign, "Reviewer"] = reviewer
-        #             save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-        #             st.success("Reviewer assigned successfully!")
+            df = load_data("Submissions")  # Load from "Submissions" worksheet
+            df.index = range(1, len(df) + 1)
+            st.write(df)
+            # Assign Reviewer
+            unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
+            if not unassigned_papers.empty:
+                paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
+                reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+                if st.button("Assign Reviewer"):
+                    df.at[paper_to_assign, "Reviewer"] = reviewer
+                    save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+                    st.success("Reviewer assigned successfully!")
             
-        #     with st.expander("Delete Paper"):
-        #         paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
-        #         if st.button("Delete Paper"):
-        #             df = df[df["File Name"] != paper_to_delete]
-        #             save_data(df, "Submissions")
-        #             st.success("Paper deleted successfully!")
+            with st.expander("Delete Paper"):
+                paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
+                if st.button("Delete Paper"):
+                    df = df[df["File Name"] != paper_to_delete]
+                    save_data(df, "Submissions")
+                    st.success("Paper deleted successfully!")
 
+        
         elif role == "admin":
             st.title("Admin Dashboard")
             st.write("Manage papers, assign reviewers, and delete papers.")
@@ -228,6 +230,7 @@ if option == "Login":
                     df = df[df["File Name"] != paper_to_delete]
                     save_data(df, "Submissions")
                     st.success("Paper deleted successfully!")
+                    
     else:
         st.sidebar.error("Incorrect username/password.")
 
