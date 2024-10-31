@@ -1,0 +1,7 @@
+streamlit
+streamlit-authenticator
+pandas
+gspread
+google-auth
+google-api-python-client
+bcrypt
