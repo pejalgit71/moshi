@@ -1,3 +1,4 @@
+# Import necessary libraries
 import streamlit as st
 import streamlit_authenticator as stauth
 import pandas as pd
@@ -91,7 +92,7 @@ def register_user(username, name, password, role):
     save_data(df, "Users")  # Save back to "Users" worksheet
 
 
-# Upload file to Google Drive
+# Upload file to Google Drive and return the file ID
 def upload_to_drive(file, filename, folder_id):
     # Create a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -103,8 +104,10 @@ def upload_to_drive(file, filename, folder_id):
     media = MediaFileUpload(tmp_file_path, resumable=True)
 
     try:
-        drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+        file_response = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+        file_id = file_response.get("id")  # Get the uploaded file's ID
         st.success("File uploaded successfully to Google Drive.")
+        return file_id  # Return the file ID
     except Exception as e:
         st.error(f"Error during file upload: {e}")
     finally:
@@ -158,11 +161,13 @@ if option == "Login":
             df = load_data("Submissions")  # Load from "Submissions" worksheet
             df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
             save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-            upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
+            file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
+            if file_id:
+                # Save the file ID for the reviewer to access later
+                df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
+                save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
             st.success("Paper submitted successfully!")
 
-
-# ------
     elif role == "reviewer":
         st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
@@ -175,6 +180,12 @@ if option == "Login":
             paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
             st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
             
+            # Create a clickable link to the file
+            file_id = assigned_papers.loc[paper_id, "File ID"]
+            if file_id:
+                file_url = f"https://drive.google.com/file/d/{file_id}/view"
+                st.write("View Paper: [Click here](%s)" % file_url)  # Create a clickable link
+
             review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
             review_comments = st.text_area("Provide comments:")
             
@@ -186,73 +197,35 @@ if option == "Login":
         else:
             st.write("No papers assigned for review.")
 
-    
-        
     elif role == "admin":
         st.title("MOSHIP Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
         
-        df = load_data("Submissions")
-        df.index = range(1, len(df) + 1)
-        st.write(df)
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        st.write(df)  # Display all papers
         
-        # Filter for reviewed and pending papers
-        reviewed_papers = df[df["Status"] != "Pending"]
-        pending_papers = df[df["Status"] == "Pending"]
-    
-        # Display Pie Chart of Reviewed vs Pending
-        with st.expander("Review Status Summary"):
-            review_counts = df["Status"].value_counts()
-            fig, ax = plt.subplots()
-            ax.pie(review_counts, labels=review_counts.index, autopct='%1.1f%%', startangle=90)
-            ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
-            st.pyplot(fig)
+        paper_id = st.number_input("Enter the index of the paper to delete:", min_value=0, max_value=len(df)-1, step=1)
         
-        # Display Line Chart of Reviewed Papers Over Time (if you have a 'Submission Date' column)
-        if "Submission Date" in df.columns:
-            with st.expander("Reviewed Papers Over Time"):
-                df["Submission Date"] = pd.to_datetime(df["Submission Date"])
-                reviewed_over_time = reviewed_papers.groupby("Submission Date").size().cumsum()
-                st.line_chart(reviewed_over_time)
-    
-        # Assign Reviewer
-        unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
-        if not unassigned_papers.empty:
-            paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
-            reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
-            if st.button("Assign Reviewer"):
-                df.at[paper_to_assign, "Reviewer"] = reviewer
-                save_data(df, "Submissions")
-                st.success("Reviewer assigned successfully!")
+        if st.button("Delete Paper"):
+            df = df.drop(index=paper_id)  # Drop the selected paper
+            save_data(df.reset_index(drop=True), "Submissions")  # Save updated data
+            st.success("Paper deleted successfully!")
         
-        # Delete Paper
-        with st.expander("Delete Paper"):
-            paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
-            if st.button("Delete Paper"):
-                df = df[df["File Name"] != paper_to_delete]
-                save_data(df, "Submissions")
-                st.success("Paper deleted successfully!")
-                
-    else:
-        st.sidebar.error("Incorrect username/password.")
-        
-    st.sidebar.markdown("---")  # Adds a horizontal line for separation
-    st.sidebar.markdown("Developed by Ts Faizal Ahmad Fadzil<sup>TM</sup>", unsafe_allow_html=True)
+        # Assign reviewers if needed
+        reviewer_name = st.selectbox("Assign Reviewer", load_users()["usernames"].keys())
+        if st.button("Assign Reviewer"):
+            df.at[paper_id, "Reviewer"] = reviewer_name
+            save_data(df, "Submissions")
+            st.success("Reviewer assigned successfully!")
 
-elif option == "Register":
-    new_username = st.text_input("Choose a Username")
-    new_name = st.text_input("Your Name")
-    new_password = st.text_input("Choose a Password", type="password")
-    role = st.selectbox("Select Role", ["author", "reviewer"])
-
-    if st.button("Register"):
-        if new_username and new_name and new_password:
-            # Check if the username already exists
-            users = load_users()
-            if new_username in users["usernames"]:
-                st.error("Username already exists. Please choose another.")
-            else:
-                register_user(new_username, new_name, new_password, role)
-                st.success("Registration successful! You can now log in.")
-        else:
-            st.error("Please fill in all fields.")
+else:
+    if option == "Register":
+        st.title("Register New User")
+        new_username = st.text_input("Username")
+        new_name = st.text_input("Name")
+        new_password = st.text_input("Password", type="password")
+        new_role = st.selectbox("Role", ["author", "reviewer"])
+        
+        if st.button("Register"):
+            register_user(new_username, new_name, new_password, new_role)
+            st.success("User registered successfully!")
