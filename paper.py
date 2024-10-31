@@ -117,7 +117,10 @@ if option == "Login":
 # ----------------
             
             if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+                # Create a new author ID or fetch existing ID
+                author_id = username  # You can customize this as needed
                 paper_data = {
+                    "Author ID": author_id,
                     "Author": name,
                     "Title": paper_title,
                     "Abstract": paper_abstract,
@@ -139,7 +142,8 @@ if option == "Login":
             st.write("View and review assigned papers.")
             
             df = load_data("Submissions")  # Load from "Submissions" worksheet
-            assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == name)]
+            assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
+            st.write(assigned_papers)
             
             if not assigned_papers.empty:
                 paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
