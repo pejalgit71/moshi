@@ -160,13 +160,57 @@ if option == "Login":
             else:
                 st.write("No papers assigned for review.")
 
+        # elif role == "admin":
+        #     st.title("Admin Dashboard")
+        #     st.write("Manage papers, assign reviewers, and delete papers.")
+            
+        #     df = load_data("Submissions")  # Load from "Submissions" worksheet
+        #     df.index = range(1, len(df) + 1)
+        #     st.write(df)
+        #     # Assign Reviewer
+        #     unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
+        #     if not unassigned_papers.empty:
+        #         paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
+        #         reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+        #         if st.button("Assign Reviewer"):
+        #             df.at[paper_to_assign, "Reviewer"] = reviewer
+        #             save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+        #             st.success("Reviewer assigned successfully!")
+            
+        #     with st.expander("Delete Paper"):
+        #         paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
+        #         if st.button("Delete Paper"):
+        #             df = df[df["File Name"] != paper_to_delete]
+        #             save_data(df, "Submissions")
+        #             st.success("Paper deleted successfully!")
+
         elif role == "admin":
             st.title("Admin Dashboard")
             st.write("Manage papers, assign reviewers, and delete papers.")
             
-            df = load_data("Submissions")  # Load from "Submissions" worksheet
+            df = load_data("Submissions")
             df.index = range(1, len(df) + 1)
             st.write(df)
+            
+            # Filter for reviewed and pending papers
+            reviewed_papers = df[df["Status"] != "Pending"]
+            pending_papers = df[df["Status"] == "Pending"]
+        
+            # Display Pie Chart of Reviewed vs Pending
+            with st.expander("Review Status Summary"):
+                review_counts = df["Status"].value_counts()
+                fig, ax = plt.subplots()
+                ax.pie(review_counts, labels=review_counts.index, autopct='%1.1f%%', startangle=90)
+                ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
+                st.pyplot(fig)
+            
+            # Display Line Chart of Reviewed Papers Over Time (if you have a 'Submission Date' column)
+            if "Submission Date" in df.columns:
+                with st.expander("Reviewed Papers Over Time"):
+                    df["Submission Date"] = pd.to_datetime(df["Submission Date"])
+                    reviewed_over_time = reviewed_papers.groupby("Submission Date").size().cumsum()
+                    st.line_chart(reviewed_over_time)
+        
             # Assign Reviewer
             unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
             if not unassigned_papers.empty:
@@ -174,9 +218,10 @@ if option == "Login":
                 reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
                 if st.button("Assign Reviewer"):
                     df.at[paper_to_assign, "Reviewer"] = reviewer
-                    save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+                    save_data(df, "Submissions")
                     st.success("Reviewer assigned successfully!")
             
+            # Delete Paper
             with st.expander("Delete Paper"):
                 paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
                 if st.button("Delete Paper"):
