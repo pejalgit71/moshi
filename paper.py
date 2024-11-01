@@ -155,9 +155,8 @@ if st.session_state["logged_in"]:
 		st.session_state["name"] = ""
 		st.session_state["role"] = ""
 		st.sidebar.success("Logged out successfully.")
-
-    	name = st.session_state["name"]
-    	role = st.session_state["role"]
+	name = st.session_state["name"]
+	role = st.session_state["role"]
 
 if role == "author":
 	st.title("Author Dashboard")
