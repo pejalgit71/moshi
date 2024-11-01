@@ -140,12 +140,12 @@ elif option == "Register":
 	st.title("Register New User")
 	new_username = st.text_input("Username")
 	new_name = st.text_input("Name")
-        new_password = st.text_input("Password", type="password")
-        new_role = st.selectbox("Role", ["author", "reviewer"])
-
-        if st.button("Register"):
-            register_user(new_username, new_name, new_password, new_role)
-            st.success("User registered successfully!")
+	new_password = st.text_input("Password", type="password")
+	new_role = st.selectbox("Role", ["author", "reviewer"])
+	
+	if st.button("Register"):
+		register_user(new_username, new_name, new_password, new_role)
+		st.success("User registered successfully!")
 
 # Logout button
 if st.session_state["logged_in"]:
