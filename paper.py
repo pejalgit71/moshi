@@ -136,8 +136,8 @@ if not st.session_state["logged_in"]:
         else:
             st.sidebar.error("Invalid username or password.")
 
-    elif option == "Register":
-        st.title("Register New User")
+elif option == "Register":
+	st.title("Register New User")
         new_username = st.text_input("Username")
         new_name = st.text_input("Name")
         new_password = st.text_input("Password", type="password")
@@ -201,9 +201,8 @@ if role == "author":
 		    save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
 		    st.success("Paper submitted successfully!")
 	
-	
-    elif role == "reviewer":
-        st.title("Reviewer Dashboard")
+elif role == "reviewer":
+	st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
         
         df = load_data("Submissions")  # Load from "Submissions" worksheet
