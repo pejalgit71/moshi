@@ -214,7 +214,7 @@ elif role == "reviewer":
 		st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
 		# Create a clickable link to the file
 		file_id = assigned_papers.loc[paper_id, "File ID"]
-            	if file_id:
+		if file_id:
 			file_url = f"https://drive.google.com/file/d/{file_id}/view"
 			st.write("View Paper: [Click here](%s)" % file_url)  # Create a clickable link
 			
