@@ -225,8 +225,8 @@ elif role == "reviewer":
 			df.at[paper_id, "Reviewer Comments"] = review_comments
 			save_data(df, "Submissions")  # Save back to "Submissions" worksheet
 			st.success("Review submitted successfully!")
-        else:
-            st.write("No papers assigned for review.")
+	else:
+		st.write("No papers assigned for review.")
 		
 elif role == "admin": 
 	st.title("MOSHIP Admin Dashboard")
