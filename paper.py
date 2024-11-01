@@ -220,9 +220,8 @@ elif role == "reviewer":
 			
 		review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
 		review_comments = st.text_area("Provide comments:")
-            
-            	if st.button("Submit Review"):
-	                df.at[paper_id, "Status"] = review_status
+		if st.button("Submit Review"):
+			df.at[paper_id, "Status"] = review_status
 	                df.at[paper_id, "Reviewer Comments"] = review_comments
 	                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
 	                st.success("Review submitted successfully!")
