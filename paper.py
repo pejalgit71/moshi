@@ -264,17 +264,17 @@ elif role == "admin":
             paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
             reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
             if st.button("Assign Reviewer"):
-                df.at[paper_to_assign, "Reviewer"] = reviewer
-                save_data(df, "Submissions")
-                st.success("Reviewer assigned successfully!")
+		    df.at[paper_to_assign, "Reviewer"] = reviewer
+		    save_data(df, "Submissions")
+		    st.success("Reviewer assigned successfully!")
         
         # Delete Paper
         with st.expander("Delete Paper"):
-            paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
-            if st.button("Delete Paper"):
-                df = df[df["File Name"] != paper_to_delete]
-                save_data(df, "Submissions")
-                st.success("Paper deleted successfully!")
+		paper_to_delete = st.selectbox("Select a paper to delete", df["File Name"])
+		if st.button("Delete Paper"):
+			df = df[df["File Name"] != paper_to_delete]
+			save_data(df, "Submissions")
+			st.success("Paper deleted successfully!")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
