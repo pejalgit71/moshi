@@ -45,10 +45,8 @@ def load_data(worksheet_name):
 
 # Save DataFrame back to a specific worksheet
 def save_data(df, worksheet_name):
-    # Convert Timestamp objects to strings for JSON compatibility
     if 'Submission Date' in df.columns:
         df['Submission Date'] = df['Submission Date'].astype(str)
-    
     sheet = gc.open("Paper_Submissions").worksheet(worksheet_name)
     df = df.fillna('')
     df.replace([float('inf'), float('-inf')], '', inplace=True)
@@ -56,7 +54,7 @@ def save_data(df, worksheet_name):
 
 # Load users from the "Users" worksheet
 def load_users():
-    user_data = load_data("Users")  # Load from "Users" worksheet
+    user_data = load_data("Users")
     users = {
         "usernames": {
             row["Username"]: {
@@ -85,52 +83,87 @@ def register_user(username, name, password, role):
         "Password": hashed_password,
         "Role": role
     }])
-    
-    df = load_data("Users")  # Load from "Users" worksheet
+    df = load_data("Users")
     df = pd.concat([df, new_user], ignore_index=True)
-    
-    save_data(df, "Users")  # Save back to "Users" worksheet
-
+    save_data(df, "Users")
 
 # Upload file to Google Drive and return the file ID
 def upload_to_drive(file, filename, folder_id):
-    # Create a temporary file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
-        tmp_file.write(file.getvalue())  # Write the uploaded file to the temporary file
+        tmp_file.write(file.getvalue())
         tmp_file_path = tmp_file.name
-
-    # Upload to Google Drive
-    file_metadata = {"name": filename, "parents": [folder_id]}  # Ensure to use the correct folder ID
+    file_metadata = {"name": filename, "parents": [folder_id]}
     media = MediaFileUpload(tmp_file_path, resumable=True)
-
     try:
         file_response = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-        file_id = file_response.get("id")  # Get the uploaded file's ID
+        file_id = file_response.get("id")
         st.success("File uploaded successfully to Google Drive.")
-        return file_id  # Return the file ID
+        return file_id
     except Exception as e:
         st.error(f"Error during file upload: {e}")
     finally:
-        os.remove(tmp_file_path)  # Remove the temporary file
+        os.remove(tmp_file_path)
 
 # Main Streamlit App
-st.sidebar.image("MOSHIP-1.png", use_column_width=True)  # Adjust the path and use_column_width if needed
+st.sidebar.image("MOSHIP-1.png", use_column_width=True)
 st.sidebar.title("Login / Register")
-option = st.sidebar.selectbox("Select an option", ["Login", "Register"])
 
+# Initialize session state for login
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+if "username" not in st.session_state:
+    st.session_state["username"] = ""
+if "name" not in st.session_state:
+    st.session_state["name"] = ""
+if "role" not in st.session_state:
+    st.session_state["role"] = ""
 
+if not st.session_state["logged_in"]:
+    option = st.sidebar.selectbox("Select an option", ["Login", "Register"])
 
-if option == "Login":
-    username = st.sidebar.text_input("Username")
-    password = st.sidebar.text_input("Password", type="password")
-    users = load_users()
-    name, role = authenticate(username, password, users)
+    if option == "Login":
+        username = st.sidebar.text_input("Username")
+        password = st.sidebar.text_input("Password", type="password")
+        users = load_users()
+        name, role = authenticate(username, password, users)
 
-    if name:
-        st.sidebar.success(f"Welcome, {name}!")
+        if name:
+            st.session_state["logged_in"] = True
+            st.session_state["username"] = username
+            st.session_state["name"] = name
+            st.session_state["role"] = role
+            st.sidebar.success(f"Welcome, {name}!")
+        else:
+            st.sidebar.error("Invalid username or password.")
+
+    elif option == "Register":
+        st.title("Register New User")
+        new_username = st.text_input("Username")
+        new_name = st.text_input("Name")
+        new_password = st.text_input("Password", type="password")
+        new_role = st.selectbox("Role", ["author", "reviewer"])
+
+        if st.button("Register"):
+            register_user(new_username, new_name, new_password, new_role)
+            st.success("User registered successfully!")
+
+# Logout button
+if st.session_state["logged_in"]:
+    if st.sidebar.button("Logout"):
+        st.session_state["logged_in"] = False
+        st.session_state["username"] = ""
+        st.session_state["name"] = ""
+        st.session_state["role"] = ""
+        st.sidebar.success("Logged out successfully.")
+
+    name = st.session_state["name"]
+    role = st.session_state["role"]
 
     if role == "author":
         st.title("Author Dashboard")
+        st.write("Submit and track your papers here.")
+        # (Author dashboard code here)
+	st.title("Author Dashboard")
         st.write("Submit and track your papers here.")
         
         # Paper Information Fields
@@ -171,8 +204,8 @@ if option == "Login":
     elif role == "reviewer":
         st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
-        
-        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        # (Reviewer dashboard code here)
+	        df = load_data("Submissions")  # Load from "Submissions" worksheet
         assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
         st.write(assigned_papers)
         
@@ -200,8 +233,8 @@ if option == "Login":
     elif role == "admin":
         st.title("MOSHIP Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
-        
-        df = load_data("Submissions")
+        # (Admin dashboard code here)
+	        df = load_data("Submissions")
         df.index = range(1, len(df) + 1)
         st.write(df)
         
@@ -241,7 +274,6 @@ if option == "Login":
                 df = df[df["File Name"] != paper_to_delete]
                 save_data(df, "Submissions")
                 st.success("Paper deleted successfully!")
-
 else:
     if option == "Register":
         st.title("Register New User")
@@ -253,5 +285,6 @@ else:
         if st.button("Register"):
             register_user(new_username, new_name, new_password, new_role)
             st.success("User registered successfully!")
-st.sidebar.markdown("---")  # Adds a horizontal line for separation
+
+st.sidebar.markdown("---")
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
