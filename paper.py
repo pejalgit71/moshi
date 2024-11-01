@@ -150,14 +150,14 @@ if not st.session_state["logged_in"]:
 # Logout button
 if st.session_state["logged_in"]:
 	if st.sidebar.button("Logout"):
-        st.session_state["logged_in"] = False
-        st.session_state["username"] = ""
-        st.session_state["name"] = ""
-        st.session_state["role"] = ""
-        st.sidebar.success("Logged out successfully.")
+		st.session_state["logged_in"] = False
+	        st.session_state["username"] = ""
+	        st.session_state["name"] = ""
+	        st.session_state["role"] = ""
+	        st.sidebar.success("Logged out successfully.")
 
-    name = st.session_state["name"]
-    role = st.session_state["role"]
+    	name = st.session_state["name"]
+    	role = st.session_state["role"]
 
 if role == "author":
 	st.title("Author Dashboard")
