@@ -203,30 +203,29 @@ if role == "author":
 	
 elif role == "reviewer":
 	st.title("Reviewer Dashboard")
-        st.write("View and review assigned papers.")
-        
-        df = load_data("Submissions")  # Load from "Submissions" worksheet
-        assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
-        st.write(assigned_papers)
-        
-        if not assigned_papers.empty:
-            paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
-            st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
+	st.write("View and review assigned papers.")
+	
+	df = load_data("Submissions")  # Load from "Submissions" worksheet
+	assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
+	st.write(assigned_papers)
+	
+	if not assigned_papers.empty:
+		paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
+		st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
+		# Create a clickable link to the file
+		file_id = assigned_papers.loc[paper_id, "File ID"]
+            	if file_id:
+			file_url = f"https://drive.google.com/file/d/{file_id}/view"
+			st.write("View Paper: [Click here](%s)" % file_url)  # Create a clickable link
+			
+		review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
+		review_comments = st.text_area("Provide comments:")
             
-            # Create a clickable link to the file
-            file_id = assigned_papers.loc[paper_id, "File ID"]
-            if file_id:
-                file_url = f"https://drive.google.com/file/d/{file_id}/view"
-                st.write("View Paper: [Click here](%s)" % file_url)  # Create a clickable link
-
-            review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
-            review_comments = st.text_area("Provide comments:")
-            
-            if st.button("Submit Review"):
-                df.at[paper_id, "Status"] = review_status
-                df.at[paper_id, "Reviewer Comments"] = review_comments
-                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-                st.success("Review submitted successfully!")
+            	if st.button("Submit Review"):
+	                df.at[paper_id, "Status"] = review_status
+	                df.at[paper_id, "Reviewer Comments"] = review_comments
+	                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+	                st.success("Review submitted successfully!")
         else:
             st.write("No papers assigned for review.")
 		
