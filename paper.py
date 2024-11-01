@@ -138,8 +138,8 @@ if not st.session_state["logged_in"]:
 
 elif option == "Register":
 	st.title("Register New User")
-        new_username = st.text_input("Username")
-        new_name = st.text_input("Name")
+	new_username = st.text_input("Username")
+	new_name = st.text_input("Name")
         new_password = st.text_input("Password", type="password")
         new_role = st.selectbox("Role", ["author", "reviewer"])
 
