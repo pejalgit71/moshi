@@ -194,11 +194,12 @@ if role == "author":
 	    df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
 	    save_data(df, "Submissions")  # Save back to "Submissions" worksheet
 	    file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
+		
 	    if file_id:
-		# Save the file ID for the reviewer to access later
-		df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
-		save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
-	    st.success("Paper submitted successfully!")
+		    # Save the file ID for the reviewer to access later
+		    df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
+		    save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
+		    st.success("Paper submitted successfully!")
 	
 	
 elif role == "reviewer":
