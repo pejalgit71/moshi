@@ -149,7 +149,7 @@ if not st.session_state["logged_in"]:
 
 # Logout button
 if st.session_state["logged_in"]:
-    if st.sidebar.button("Logout"):
+	if st.sidebar.button("Logout"):
         st.session_state["logged_in"] = False
         st.session_state["username"] = ""
         st.session_state["name"] = ""
@@ -159,50 +159,51 @@ if st.session_state["logged_in"]:
     name = st.session_state["name"]
     role = st.session_state["role"]
 
-    if role == "author":
-        st.title("Author Dashboard")
-        st.write("Submit and track your papers here.")
-        # (Author dashboard code here)
+if role == "author":
 	st.title("Author Dashboard")
-        st.write("Submit and track your papers here.")
-        
-        # Paper Information Fields
-        paper_title = st.text_input("Paper Title")
-        paper_abstract = st.text_area("Abstract")
-        paper_keywords = st.text_input("Keywords (comma-separated)")
-        paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
+	st.write("Submit and track your papers here.")
+	# (Author dashboard code here)
+	st.title("Author Dashboard")
+	st.write("Submit and track your papers here.")
+	
+	# Paper Information Fields
+	paper_title = st.text_input("Paper Title")
+	paper_abstract = st.text_area("Abstract")
+	paper_keywords = st.text_input("Keywords (comma-separated)")
+	paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
 
-        if paper_file and all([paper_title, paper_abstract, paper_keywords]):
-            # Create a new author ID or fetch existing ID
-            author_id = username  # You can customize this as needed
-            folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
-            submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
+	if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+	    # Create a new author ID or fetch existing ID
+	    author_id = username  # You can customize this as needed
+	    folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+	    submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
     
-            paper_data = {
-                "Author ID": author_id,
-                "Author": name,
-                "Title": paper_title,
-                "Abstract": paper_abstract,
-                "Keywords": paper_keywords,
-                "Status": "Pending",
-                "Reviewer": "",
-                "Reviewer Comments": "",
-                "File Name": paper_file.name,
-                "Submission Date": submission_date  # Add submission date here
-            }
+	    paper_data = {
+		"Author ID": author_id,
+		"Author": name,
+		"Title": paper_title,
+		"Abstract": paper_abstract,
+		"Keywords": paper_keywords,
+		"Status": "Pending",
+		"Reviewer": "",
+		"Reviewer Comments": "",
+		"File Name": paper_file.name,
+		"Submission Date": submission_date  # Add submission date here
+	    }
     
-            df = load_data("Submissions")  # Load from "Submissions" worksheet
-            df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
-            save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-            file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
-            if file_id:
-                # Save the file ID for the reviewer to access later
-                df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
-                save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
-            st.success("Paper submitted successfully!")
-
-    elif role == "reviewer":
-        st.title("Reviewer Dashboard")
+	    df = load_data("Submissions")  # Load from "Submissions" worksheet
+	    df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
+	    save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+	    file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
+	    if file_id:
+		# Save the file ID for the reviewer to access later
+		df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
+		save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
+	    st.success("Paper submitted successfully!")
+	
+	
+elif role == "reviewer":
+	st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
         # (Reviewer dashboard code here)
 	        df = load_data("Submissions")  # Load from "Submissions" worksheet
@@ -229,12 +230,12 @@ if st.session_state["logged_in"]:
                 st.success("Review submitted successfully!")
         else:
             st.write("No papers assigned for review.")
-
-    elif role == "admin":
-        st.title("MOSHIP Admin Dashboard")
+		
+elif role == "admin": 
+	st.title("MOSHIP Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
         # (Admin dashboard code here)
-	        df = load_data("Submissions")
+	df = load_data("Submissions")
         df.index = range(1, len(df) + 1)
         st.write(df)
         
@@ -274,17 +275,6 @@ if st.session_state["logged_in"]:
                 df = df[df["File Name"] != paper_to_delete]
                 save_data(df, "Submissions")
                 st.success("Paper deleted successfully!")
-else:
-    if option == "Register":
-        st.title("Register New User")
-        new_username = st.text_input("Username")
-        new_name = st.text_input("Name")
-        new_password = st.text_input("Password", type="password")
-        new_role = st.selectbox("Role", ["author", "reviewer"])
-        
-        if st.button("Register"):
-            register_user(new_username, new_name, new_password, new_role)
-            st.success("User registered successfully!")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
