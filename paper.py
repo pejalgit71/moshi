@@ -202,11 +202,11 @@ if role == "author":
 		    st.success("Paper submitted successfully!")
 	
 	
-elif role == "reviewer":
-	st.title("Reviewer Dashboard")
+    elif role == "reviewer":
+        st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
-        # (Reviewer dashboard code here)
-	        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
         assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
         st.write(assigned_papers)
         
