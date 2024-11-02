@@ -55,10 +55,9 @@ def save_data(df, worksheet_name):
 # Load users from the "Users" worksheet
 def load_users():
     user_data = load_data("Users")
-    users = 
-    { "usernames": 
-     {
-         row["Username"]: {
+    users = {
+        "usernames": {
+            row["Username"]: {
                 "name": row["Name"],
                 "password": row["Password"],
                 "role": row["Role"]
@@ -66,9 +65,7 @@ def load_users():
             for _, row in user_data.iterrows()
         }
     }
-    
     return users
-
 # Authenticate user using bcrypt hashed passwords
 def authenticate(username, password, users):
     user = users["usernames"].get(username)
