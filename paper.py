@@ -322,6 +322,7 @@ if st.session_state["logged_in"]:
         if not unassigned_papers.empty:
             paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
             # reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+            users = st.session_state["users"]
             reviewer = st.selectbox("Select a reviewer", [u for u, info in users["usernames"].items() if info.get("role") == "reviewer"]
 )
             if st.button("Assign Reviewer"):
