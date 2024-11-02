@@ -194,13 +194,15 @@ if st.session_state["logged_in"]:
                 "Reviewer": "",
                 "Reviewer Comments": "",
                 "File Name": paper_file.name,
+                # "File ID":
                 "Submission Date": submission_date  # Add submission date here
             }
     
             df = load_data("Submissions")  # Load from "Submissions" worksheet
             df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
             save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-            upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
+            file_id = upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
+            st.write(file_id)
             st.success("Paper submitted successfully!")
 
 
