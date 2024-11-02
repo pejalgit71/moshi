@@ -266,7 +266,7 @@ if st.session_state["logged_in"]:
         st.write("View and review assigned papers.")
         
         df = load_data("Submissions")  # Load from "Submissions" worksheet
-        assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
+        assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == st.session_state["username"] )]
         st.write(assigned_papers)
         
         if not assigned_papers.empty:
