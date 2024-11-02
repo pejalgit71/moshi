@@ -185,7 +185,7 @@ if role == "author":
         # Upload file to Google Drive and get file ID
         file_id = upload_to_drive(paper_file, paper_file.name, folder_id)
         file_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
-        st.write(file_link)
+        st.write("File link is: ", file_link)
         
         # Add paper data with file ID link to the DataFrame
         paper_data = {
