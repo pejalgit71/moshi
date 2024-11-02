@@ -159,6 +159,7 @@ if st.session_state["logged_in"]:
     name = st.session_state["name"]
     role = st.session_state["role"]
 
+
     if role == "author":
         st.title("Author Dashboard")
         st.write("Submit and track your papers here.")
@@ -272,10 +273,16 @@ if st.session_state["logged_in"]:
                 save_data(df, "Submissions")
                 st.success("Paper deleted successfully!")
 
-    # --------
-
-    else:
-        st.sidebar.error("Incorrect username/password.")
-
-st.sidebar.markdown("---")
+else:
+    if option == "Register":
+        st.title("Register New User")
+        new_username = st.text_input("Username")
+        new_name = st.text_input("Name")
+        new_password = st.text_input("Password", type="password")
+        new_role = st.selectbox("Role", ["author", "reviewer"])
+        
+        if st.button("Register"):
+            register_user(new_username, new_name, new_password, new_role)
+            st.success("User registered successfully!")
+st.sidebar.markdown("---")  # Adds a horizontal line for separation
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
