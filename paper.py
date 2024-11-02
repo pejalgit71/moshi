@@ -172,7 +172,7 @@ if st.session_state["logged_in"]:
 
         if paper_file and all([paper_title, paper_abstract, paper_keywords]):
             # Create a new author ID or fetch existing ID
-            author_id = username  # You can customize this as needed
+            author_id = st.session_state["username"]  # You can customize this as needed
             folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
             submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
     
