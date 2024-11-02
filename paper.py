@@ -56,18 +56,18 @@ def save_data(df, worksheet_name):
 def load_users():
     user_data = load_data("Users")
     if "users" not in st.session_state:
-    # Initialize users only once
-    st.session_state.users = 
-    { "usernames": 
-     {
-         row["Username"]: {
-                "name": row["Name"],
-                "password": row["Password"],
-                "role": row["Role"]
+        # Initialize users only once
+        st.session_state.users = 
+        { "usernames": 
+         {
+             row["Username"]: {
+                    "name": row["Name"],
+                    "password": row["Password"],
+                    "role": row["Role"]
+                }
+                for _, row in user_data.iterrows()
             }
-            for _, row in user_data.iterrows()
         }
-    }
     return users
 
 # Authenticate user using bcrypt hashed passwords
