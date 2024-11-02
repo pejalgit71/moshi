@@ -276,8 +276,9 @@ if st.session_state["logged_in"]:
             # Create a clickable link to the file
             file_id = assigned_papers.loc[paper_id, "File ID"]
             if file_id:
-                file_url = f"https://drive.google.com/file/d/{file_id}"
+                file_url = f"{file_id}"
                 # https://drive.google.com/file/d/1rj7wAXrqvGHfm7zj1vOYq8QL7bxXMPyk/view?usp=sharing
+                # https://drive.google.com/file/d/https:/drive.google.com/file/d/1PEHQiKzqF2T41syiaTUKFP_2r7OwfDCS/view?usp=sharing
                 st.write("View Paper: [Click here](%s)" % file_url)  # Create a clickable link
 
             review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
