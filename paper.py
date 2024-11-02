@@ -88,6 +88,21 @@ def register_user(username, name, password, role):
     save_data(df, "Users")
 
 # Upload file to Google Drive and return the file ID
+# def upload_to_drive(file, filename, folder_id):
+#     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+#         tmp_file.write(file.getvalue())
+#         tmp_file_path = tmp_file.name
+#     file_metadata = {"name": filename, "parents": [folder_id]}
+#     media = MediaFileUpload(tmp_file_path, resumable=True)
+#     try:
+#         file_response = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
+#         file_id = file_response.get("id")
+#         st.success("File uploaded successfully to Google Drive.")
+#         return file_id
+#     except Exception as e:
+#         st.error(f"Error during file upload: {e}")
+#     finally:
+#         os.remove(tmp_file_path)
 def upload_to_drive(file, filename, folder_id):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         tmp_file.write(file.getvalue())
@@ -97,13 +112,20 @@ def upload_to_drive(file, filename, folder_id):
     try:
         file_response = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
         file_id = file_response.get("id")
+        
+        # Set permission to make the file publicly accessible
+        drive_service.permissions().create(
+            fileId=file_id,
+            body={"role": "reader", "type": "anyone"},
+        ).execute()
+
         st.success("File uploaded successfully to Google Drive.")
         return file_id
     except Exception as e:
         st.error(f"Error during file upload: {e}")
     finally:
         os.remove(tmp_file_path)
-
+        
 # Main Streamlit App
 st.sidebar.image("MOSHIP-1.png", use_column_width=True)
 st.sidebar.title("Login / Register")
@@ -160,45 +182,84 @@ if st.session_state["logged_in"]:
     role = st.session_state["role"]
 
 
-    if role == "author":
-        st.title("Author Dashboard")
-        st.write("Submit and track your papers here.")
+    # if role == "author":
+    #     st.title("Author Dashboard")
+    #     st.write("Submit and track your papers here.")
         
-        # Paper Information Fields
-        paper_title = st.text_input("Paper Title")
-        paper_abstract = st.text_area("Abstract")
-        paper_keywords = st.text_input("Keywords (comma-separated)")
-        paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
+    #     # Paper Information Fields
+    #     paper_title = st.text_input("Paper Title")
+    #     paper_abstract = st.text_area("Abstract")
+    #     paper_keywords = st.text_input("Keywords (comma-separated)")
+    #     paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
 
-        if paper_file and all([paper_title, paper_abstract, paper_keywords]):
-            # Create a new author ID or fetch existing ID
-            author_id = st.session_state["username"]  # You can customize this as needed
-            folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
-            submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
+    #     if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+    #         # Create a new author ID or fetch existing ID
+    #         author_id = st.session_state["username"]  # You can customize this as needed
+    #         folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+    #         submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
     
-            paper_data = {
-                "Author ID": author_id,
-                "Author": name,
-                "Title": paper_title,
-                "Abstract": paper_abstract,
-                "Keywords": paper_keywords,
-                "Status": "Pending",
-                "Reviewer": "",
-                "Reviewer Comments": "",
-                "File Name": paper_file.name,
-                "Submission Date": submission_date  # Add submission date here
-            }
+    #         paper_data = {
+    #             "Author ID": author_id,
+    #             "Author": name,
+    #             "Title": paper_title,
+    #             "Abstract": paper_abstract,
+    #             "Keywords": paper_keywords,
+    #             "Status": "Pending",
+    #             "Reviewer": "",
+    #             "Reviewer Comments": "",
+    #             "File Name": paper_file.name,
+    #             "Submission Date": submission_date  # Add submission date here
+    #         }
     
-            df = load_data("Submissions")  # Load from "Submissions" worksheet
-            df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
-            save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-            file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
-            if file_id:
-                # Save the file ID for the reviewer to access later
-                df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
-                save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
-            st.success("Paper submitted successfully!")
+    #         df = load_data("Submissions")  # Load from "Submissions" worksheet
+    #         df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
+    #         save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+    #         file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
+    #         if file_id:
+    #             # Save the file ID for the reviewer to access later
+    #             df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
+    #             save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
+    #         st.success("Paper submitted successfully!")
+    if role == "author":
+    st.title("Author Dashboard")
+    st.write("Submit and track your papers here.")
+    
+    # Paper Information Fields
+    paper_title = st.text_input("Paper Title")
+    paper_abstract = st.text_area("Abstract")
+    paper_keywords = st.text_input("Keywords (comma-separated)")
+    paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
 
+    if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+        # Create a new author ID or fetch existing ID
+        author_id = st.session_state["username"]   # You can customize this as needed
+        folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+        submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
+
+        # Upload file to Google Drive and get file ID
+        file_id = upload_to_drive(paper_file, paper_file.name, folder_id)
+        file_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+        
+        # Add paper data with file ID link to the DataFrame
+        paper_data = {
+            "Author ID": author_id,
+            "Author": name,
+            "Title": paper_title,
+            "Abstract": paper_abstract,
+            "Keywords": paper_keywords,
+            "Status": "Pending",
+            "Reviewer": "",
+            "Reviewer Comments": "",
+            "File Name": paper_file.name,
+            "File ID": file_link,  # Add link here
+            "Submission Date": submission_date
+        }
+        
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update with new data
+        save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+
+        st.success("Paper submitted successfully with link added to Google Sheet!")
     elif role == "reviewer":
         st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
