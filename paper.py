@@ -221,45 +221,45 @@ if st.session_state["logged_in"]:
     #             save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
     #         st.success("Paper submitted successfully!")
     if role == "author":
-    st.title("Author Dashboard")
-    st.write("Submit and track your papers here.")
+        st.title("Author Dashboard")
+        st.write("Submit and track your papers here.")
+        
+        # Paper Information Fields
+        paper_title = st.text_input("Paper Title")
+        paper_abstract = st.text_area("Abstract")
+        paper_keywords = st.text_input("Keywords (comma-separated)")
+        paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
     
-    # Paper Information Fields
-    paper_title = st.text_input("Paper Title")
-    paper_abstract = st.text_area("Abstract")
-    paper_keywords = st.text_input("Keywords (comma-separated)")
-    paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
-
-    if paper_file and all([paper_title, paper_abstract, paper_keywords]):
-        # Create a new author ID or fetch existing ID
-        author_id = st.session_state["username"]   # You can customize this as needed
-        folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
-        submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
-
-        # Upload file to Google Drive and get file ID
-        file_id = upload_to_drive(paper_file, paper_file.name, folder_id)
-        file_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
-        
-        # Add paper data with file ID link to the DataFrame
-        paper_data = {
-            "Author ID": author_id,
-            "Author": name,
-            "Title": paper_title,
-            "Abstract": paper_abstract,
-            "Keywords": paper_keywords,
-            "Status": "Pending",
-            "Reviewer": "",
-            "Reviewer Comments": "",
-            "File Name": paper_file.name,
-            "File ID": file_link,  # Add link here
-            "Submission Date": submission_date
-        }
-        
-        df = load_data("Submissions")  # Load from "Submissions" worksheet
-        df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update with new data
-        save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-
-        st.success("Paper submitted successfully with link added to Google Sheet!")
+        if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+            # Create a new author ID or fetch existing ID
+            author_id = st.session_state["username"]   # You can customize this as needed
+            folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+            submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
+    
+            # Upload file to Google Drive and get file ID
+            file_id = upload_to_drive(paper_file, paper_file.name, folder_id)
+            file_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+            
+            # Add paper data with file ID link to the DataFrame
+            paper_data = {
+                "Author ID": author_id,
+                "Author": name,
+                "Title": paper_title,
+                "Abstract": paper_abstract,
+                "Keywords": paper_keywords,
+                "Status": "Pending",
+                "Reviewer": "",
+                "Reviewer Comments": "",
+                "File Name": paper_file.name,
+                "File ID": file_link,  # Add link here
+                "Submission Date": submission_date
+            }
+            
+            df = load_data("Submissions")  # Load from "Submissions" worksheet
+            df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update with new data
+            save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+    
+            st.success("Paper submitted successfully with link added to Google Sheet!")
     elif role == "reviewer":
         st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
