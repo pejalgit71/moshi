@@ -138,17 +138,7 @@ if "name" not in st.session_state:
     st.session_state["name"] = ""
 if "role" not in st.session_state:
     st.session_state["role"] = ""
-if "users" not in st.session_state:
-    st.session_state.users = { "usernames": 
-     {
-         row["Username"]: {
-                "name": row["Name"],
-                "password": row["Password"],
-                "role": row["Role"]
-            }
-            for _, row in user_data.iterrows()
-        }
-    }
+
 
 if not st.session_state["logged_in"]:
     option = st.sidebar.selectbox("Select an option", ["Login", "Register"])
@@ -162,6 +152,7 @@ if not st.session_state["logged_in"]:
         if name:
             st.session_state["logged_in"] = True
             st.session_state["username"] = username
+            st.session_state.users = users
             st.session_state["name"] = name
             st.session_state["role"] = role
             st.sidebar.success(f"Welcome, {name}!")
