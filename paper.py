@@ -104,7 +104,6 @@ def upload_to_drive(file, filename, folder_id):
     finally:
         os.remove(tmp_file_path)
 
-
 # Main Streamlit App
 st.sidebar.image("MOSHIP-1.png", use_column_width=True)
 st.sidebar.title("Login / Register")
@@ -169,7 +168,7 @@ if st.session_state["logged_in"]:
         paper_abstract = st.text_area("Abstract")
         paper_keywords = st.text_input("Keywords (comma-separated)")
         paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
-
+    
         if paper_file and all([paper_title, paper_abstract, paper_keywords]):
             # Create a new author ID or fetch existing ID
             author_id = username  # You can customize this as needed
@@ -199,9 +198,12 @@ if st.session_state["logged_in"]:
     elif role == "reviewer":
         st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
-        
-        df = load_data("Submissions")  # Load from "Submissions" worksheet
+       
+        df = load_data("Submissions")
+       
         assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
+        assigned_papers.index = range(1, len(assigned_papers) + 1)
+        
         st.write(assigned_papers)
         
         if not assigned_papers.empty:
@@ -214,13 +216,13 @@ if st.session_state["logged_in"]:
             if st.button("Submit Review"):
                 df.at[paper_id, "Status"] = review_status
                 df.at[paper_id, "Reviewer Comments"] = review_comments
-                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+                save_data(df, "Submissions")
                 st.success("Review submitted successfully!")
         else:
             st.write("No papers assigned for review.")
-            
+
     elif role == "admin":
-        st.title("MOSHIP Admin Dashboard")
+        st.title("Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
         
         df = load_data("Submissions")
@@ -263,11 +265,28 @@ if st.session_state["logged_in"]:
                 df = df[df["File Name"] != paper_to_delete]
                 save_data(df, "Submissions")
                 st.success("Paper deleted successfully!")
-                
+
+    # --------
+
     else:
         st.sidebar.error("Incorrect username/password.")
-        
 
+elif option == "Register":
+    new_username = st.text_input("Choose a Username")
+    new_name = st.text_input("Your Name")
+    new_password = st.text_input("Choose a Password", type="password")
+    role = st.selectbox("Select Role", ["author", "reviewer", "admin"])
+
+    if st.button("Register"):
+        if new_username and new_name and new_password:
+            users = load_users()
+            if new_username in users["usernames"]:
+                st.error("Username already exists. Please choose another.")
+            else:
+                register_user(new_username, new_name, new_password, role)
+                st.success("Registration successful! You can now log in.")
+        else:
+            st.error("Please fill in all fields.")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
