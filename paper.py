@@ -95,17 +95,15 @@ def upload_to_drive(file, filename, folder_id):
     file_metadata = {"name": filename, "parents": [folder_id]}
     media = MediaFileUpload(tmp_file_path, resumable=True)
     try:
-        # Upload the file
         file_response = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
         file_id = file_response.get("id")
         
-        # Make the file accessible to anyone with the link
-        permission = {
-            "type": "anyone",
-            "role": "reader",
-        }
-        drive_service.permissions().create(fileId=file_id, body=permission).execute()
-        
+        # Set permission to make the file publicly accessible
+        drive_service.permissions().create(
+            fileId=file_id,
+            body={"role": "reader", "type": "anyone"},
+        ).execute()
+
         st.success("File uploaded successfully to Google Drive.")
         return file_id
     except Exception as e:
@@ -168,42 +166,46 @@ if st.session_state["logged_in"]:
     name = st.session_state["name"]
     role = st.session_state["role"]
 
-    if role == "author":
-        st.title("Author Dashboard")
-        st.write("Submit and track your papers here.")
-        
-        # Paper Information Fields
-        paper_title = st.text_input("Paper Title")
-        paper_abstract = st.text_area("Abstract")
-        paper_keywords = st.text_input("Keywords (comma-separated)")
-        paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
+if role == "author":
+    st.title("Author Dashboard")
+    st.write("Submit and track your papers here.")
+    
+    # Paper Information Fields
+    paper_title = st.text_input("Paper Title")
+    paper_abstract = st.text_area("Abstract")
+    paper_keywords = st.text_input("Keywords (comma-separated)")
+    paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
 
-        if paper_file and all([paper_title, paper_abstract, paper_keywords]):
-            # Create a new author ID or fetch existing ID
-            author_id = username  # You can customize this as needed
-            folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
-            submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
-    
-            paper_data = {
-                "Author ID": author_id,
-                "Author": name,
-                "Title": paper_title,
-                "Abstract": paper_abstract,
-                "Keywords": paper_keywords,
-                "Status": "Pending",
-                "Reviewer": "",
-                "Reviewer Comments": "",
-                "File Name": paper_file.name,
-                # "File ID":
-                "Submission Date": submission_date  # Add submission date here
-            }
-    
-            df = load_data("Submissions")  # Load from "Submissions" worksheet
-            df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
-            save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-            file_id = upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
-            st.write(file_id)
-            st.success("Paper submitted successfully!")
+    if paper_file and all([paper_title, paper_abstract, paper_keywords]):
+        # Create a new author ID or fetch existing ID
+        author_id = username  # You can customize this as needed
+        folder_id = "1BzoASAVeCAWvJ5cX7c8plMSxpfTXvA8d"
+        submission_date = datetime.datetime.now().strftime("%Y-%m-%d")  # Get current date in YYYY-MM-DD format
+
+        # Upload file to Google Drive and get file ID
+        file_id = upload_to_drive(paper_file, paper_file.name, folder_id)
+        file_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+        
+        # Add paper data with file ID link to the DataFrame
+        paper_data = {
+            "Author ID": author_id,
+            "Author": name,
+            "Title": paper_title,
+            "Abstract": paper_abstract,
+            "Keywords": paper_keywords,
+            "Status": "Pending",
+            "Reviewer": "",
+            "Reviewer Comments": "",
+            "File Name": paper_file.name,
+            "File ID": file_link,  # Add link here
+            "Submission Date": submission_date
+        }
+        
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update with new data
+        save_data(df, "Submissions")  # Save back to "Submissions" worksheet
+
+        st.success("Paper submitted successfully with link added to Google Sheet!")
 
 
     elif role == "reviewer":
