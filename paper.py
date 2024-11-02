@@ -271,22 +271,5 @@ if st.session_state["logged_in"]:
     else:
         st.sidebar.error("Incorrect username/password.")
 
-elif option == "Register":
-    new_username = st.text_input("Choose a Username")
-    new_name = st.text_input("Your Name")
-    new_password = st.text_input("Choose a Password", type="password")
-    role = st.selectbox("Select Role", ["author", "reviewer", "admin"])
-
-    if st.button("Register"):
-        if new_username and new_name and new_password:
-            users = load_users()
-            if new_username in users["usernames"]:
-                st.error("Username already exists. Please choose another.")
-            else:
-                register_user(new_username, new_name, new_password, role)
-                st.success("Registration successful! You can now log in.")
-        else:
-            st.error("Please fill in all fields.")
-
 st.sidebar.markdown("---")
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
