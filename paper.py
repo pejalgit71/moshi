@@ -55,19 +55,18 @@ def save_data(df, worksheet_name):
 # Load users from the "Users" worksheet
 def load_users():
     user_data = load_data("Users")
-    if "users" not in st.session_state:
-        # Initialize users only once
-        st.session_state.users = 
-        { "usernames": 
-         {
-             row["Username"]: {
-                    "name": row["Name"],
-                    "password": row["Password"],
-                    "role": row["Role"]
-                }
-                for _, row in user_data.iterrows()
+    users = 
+    { "usernames": 
+     {
+         row["Username"]: {
+                "name": row["Name"],
+                "password": row["Password"],
+                "role": row["Role"]
             }
+            for _, row in user_data.iterrows()
         }
+    }
+    
     return users
 
 # Authenticate user using bcrypt hashed passwords
@@ -142,6 +141,17 @@ if "name" not in st.session_state:
     st.session_state["name"] = ""
 if "role" not in st.session_state:
     st.session_state["role"] = ""
+if "users" not in st.session_state:
+    st.session_state.users = { "usernames": 
+     {
+         row["Username"]: {
+                "name": row["Name"],
+                "password": row["Password"],
+                "role": row["Role"]
+            }
+            for _, row in user_data.iterrows()
+        }
+    }
 
 if not st.session_state["logged_in"]:
     option = st.sidebar.selectbox("Select an option", ["Login", "Register"])
