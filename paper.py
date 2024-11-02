@@ -168,7 +168,7 @@ if st.session_state["logged_in"]:
         paper_abstract = st.text_area("Abstract")
         paper_keywords = st.text_input("Keywords (comma-separated)")
         paper_file = st.file_uploader("Upload your paper (PDF or DOCX)", type=["pdf", "docx"], disabled=not all([paper_title, paper_abstract, paper_keywords]))
-    
+
         if paper_file and all([paper_title, paper_abstract, paper_keywords]):
             # Create a new author ID or fetch existing ID
             author_id = username  # You can customize this as needed
@@ -191,38 +191,44 @@ if st.session_state["logged_in"]:
             df = load_data("Submissions")  # Load from "Submissions" worksheet
             df = pd.concat([df, pd.DataFrame([paper_data])], ignore_index=True)  # Update here
             save_data(df, "Submissions")  # Save back to "Submissions" worksheet
-            upload_to_drive(paper_file, paper_file.name,folder_id)  # Call the updated upload function
+            file_id = upload_to_drive(paper_file, paper_file.name, folder_id)  # Call the updated upload function
+            if file_id:
+                # Save the file ID for the reviewer to access later
+                df.at[df.index[-1], "File ID"] = file_id  # Store the file ID in the DataFrame
+                save_data(df, "Submissions")  # Update the Submissions sheet with the new file ID
             st.success("Paper submitted successfully!")
-
 
     elif role == "reviewer":
         st.title("Reviewer Dashboard")
         st.write("View and review assigned papers.")
-       
-        df = load_data("Submissions")
-       
-        assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
-        assigned_papers.index = range(1, len(assigned_papers) + 1)
         
+        df = load_data("Submissions")  # Load from "Submissions" worksheet
+        assigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == username)]
         st.write(assigned_papers)
         
         if not assigned_papers.empty:
             paper_id = st.selectbox("Select a paper to review", assigned_papers.index)
             st.write("Paper Name:", assigned_papers.loc[paper_id, "File Name"])
             
+            # Create a clickable link to the file
+            file_id = assigned_papers.loc[paper_id, "File ID"]
+            if file_id:
+                file_url = f"https://drive.google.com/file/d/{file_id}/view"
+                st.write("View Paper: [Click here](%s)" % file_url)  # Create a clickable link
+
             review_status = st.radio("Mark paper as:", ["Accepted", "Not Accepted"])
             review_comments = st.text_area("Provide comments:")
             
             if st.button("Submit Review"):
                 df.at[paper_id, "Status"] = review_status
                 df.at[paper_id, "Reviewer Comments"] = review_comments
-                save_data(df, "Submissions")
+                save_data(df, "Submissions")  # Save back to "Submissions" worksheet
                 st.success("Review submitted successfully!")
         else:
             st.write("No papers assigned for review.")
 
     elif role == "admin":
-        st.title("Admin Dashboard")
+        st.title("MOSHIP Admin Dashboard")
         st.write("Manage papers, assign reviewers, and delete papers.")
         
         df = load_data("Submissions")
