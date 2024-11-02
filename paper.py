@@ -95,8 +95,17 @@ def upload_to_drive(file, filename, folder_id):
     file_metadata = {"name": filename, "parents": [folder_id]}
     media = MediaFileUpload(tmp_file_path, resumable=True)
     try:
+        # Upload the file
         file_response = drive_service.files().create(body=file_metadata, media_body=media, fields="id").execute()
         file_id = file_response.get("id")
+        
+        # Make the file accessible to anyone with the link
+        permission = {
+            "type": "anyone",
+            "role": "reader",
+        }
+        drive_service.permissions().create(fileId=file_id, body=permission).execute()
+        
         st.success("File uploaded successfully to Google Drive.")
         return file_id
     except Exception as e:
