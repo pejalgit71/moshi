@@ -55,9 +55,12 @@ def save_data(df, worksheet_name):
 # Load users from the "Users" worksheet
 def load_users():
     user_data = load_data("Users")
-    users = {
-        "usernames": {
-            row["Username"]: {
+    if "users" not in st.session_state:
+    # Initialize users only once
+    st.session_state.users = 
+    { "usernames": 
+     {
+         row["Username"]: {
                 "name": row["Name"],
                 "password": row["Password"],
                 "role": row["Role"]
