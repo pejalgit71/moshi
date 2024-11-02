@@ -320,7 +320,9 @@ if st.session_state["logged_in"]:
         unassigned_papers = df[(df["Status"] == "Pending") & (df["Reviewer"] == "")]
         if not unassigned_papers.empty:
             paper_to_assign = st.selectbox("Select a paper to assign a reviewer", unassigned_papers.index)
-            reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+            # reviewer = st.selectbox("Select a reviewer", [u for u in users["usernames"] if users["usernames"][u]["role"] == "reviewer"])
+            reviewer = st.selectbox("Select a reviewer", [u for u, info in st.session_state.users["usernames"].items() if info.get("role") == "reviewer"]
+)
             if st.button("Assign Reviewer"):
                 df.at[paper_to_assign, "Reviewer"] = reviewer
                 save_data(df, "Submissions")
@@ -334,16 +336,6 @@ if st.session_state["logged_in"]:
                 save_data(df, "Submissions")
                 st.success("Paper deleted successfully!")
 
-else:
-    if option == "Register":
-        st.title("Register New User")
-        new_username = st.text_input("Username")
-        new_name = st.text_input("Name")
-        new_password = st.text_input("Password", type="password")
-        new_role = st.selectbox("Role", ["author", "reviewer"])
-        
-        if st.button("Register"):
-            register_user(new_username, new_name, new_password, new_role)
-            st.success("User registered successfully!")
+
 st.sidebar.markdown("---")  # Adds a horizontal line for separation
 st.sidebar.markdown("Developed by Universiti Teknologi PETRONAS<sup>TM</sup>", unsafe_allow_html=True)
