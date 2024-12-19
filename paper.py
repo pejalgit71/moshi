@@ -126,7 +126,7 @@ def upload_to_drive(file, filename, folder_id):
         os.remove(tmp_file_path)
         
 # Main Streamlit App
-st.sidebar.image("MOSHIP-1.png", use_column_width=True)
+st.sidebar.image("MOSHIP-1.png", use_container_width=True)
 st.sidebar.title("Login / Register")
 
 # Initialize session state for login
